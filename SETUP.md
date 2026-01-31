@@ -10,8 +10,9 @@ npm run start
 
 Das macht:
 1. ✅ Installiert alle Frontend Dependencies (Next.js)
-2. ✅ Installiert alle Backend Dependencies (Python/FastAPI)
-3. ✅ Startet beide Services parallel
+2. ✅ Erstellt Python Virtual Environment (venv) automatisch
+3. ✅ Installiert alle Backend Dependencies (Python/FastAPI) im venv
+4. ✅ Startet beide Services parallel
 
 ## Services
 
