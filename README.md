@@ -2,6 +2,14 @@
 
 Ein virtueller Playground - erstelle deinen eigenen AI-Charakter und lass ihn in deinem persönlichen Raum chillen.
 
+## Quick Start
+
+```bash
+npm run start
+```
+
+Das war's! Frontend + Backend laufen. Siehe [SETUP.md](./SETUP.md) für Details.
+
 ## Konzept
 
 - **Dein Raum**: Virtueller Hintergrund/Environment zum Switchen
