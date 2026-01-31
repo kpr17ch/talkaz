@@ -1,15 +1,22 @@
-# talkaz
+# Talkaz
 
-Talkaz Playground
+Ein virtueller Playground - erstelle deinen eigenen AI-Charakter und lass ihn in deinem persönlichen Raum chillen.
 
-## Branching-Strategie
+## Konzept
 
-- **main** - Stabil, jederzeit demo-ready
-- **feat/ui-playground** - UI-Experimente (Person A)
-- **feat/character-pipeline** - Character-Pipeline (Person B)
+- **Dein Raum**: Virtueller Hintergrund/Environment zum Switchen
+- **Dein Charakter**: AI-generierter Avatar der dich imitiert
+- **Dein Style**: Verschiedene Ästhetiken (PS2, Comic, etc.)
+- **Deine Vibes**: Musik und Atmosphäre
 
-### Workflow
+## Hackathon
 
-1. Für neue Features: Branch von `main` erstellen
-2. Entwickeln im Feature-Branch
-3. Merge zurück in `main` wenn stabil und getestet
+2-Tage Hackathon Projekt mit 2-Mann Team.
+
+## Branches
+
+| Branch | Fokus |
+|--------|-------|
+| `main` | Stabil, demo-ready |
+| `feat/ui-playground` | UI/Frontend (Person A) |
+| `feat/character-pipeline` | Character AI (Person B) |
