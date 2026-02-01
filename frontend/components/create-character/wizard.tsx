@@ -1,35 +1,53 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { StepImage } from './step-image'
 import { StepVoice } from './step-voice'
 import { StepVideo } from './step-video'
+import { StepBackground } from './step-background'
 import { ResultView } from './result-view'
+import * as api from '@/lib/api'
 
 interface WizardData {
   uploadedImage: File | null
+  uploadedImageUrl: string | null
   imagePrompt: string
   generatedImage: string | null
+  voiceMode: 'design' | 'clone'
   audioText: string
   voiceDescription: string
-  generatedAudioSamples: string[]
+  cloneAudioFile: File | null
+  clonedVoiceId: string | null
+  generatedAudioSamples: { url: string; duration: number }[]
   selectedAudioIndex: number | null
   audioDuration: number | null
   videoPrompt: string
   generatedVideo: string | null
+  uploadedBackground: File | null
+  uploadedBackgroundUrl: string | null
+  characterScale: number
+  finalVideo: string | null
 }
 
 const initialData: WizardData = {
   uploadedImage: null,
+  uploadedImageUrl: null,
   imagePrompt: '',
   generatedImage: null,
+  voiceMode: 'design',
   audioText: '',
   voiceDescription: '',
+  cloneAudioFile: null,
+  clonedVoiceId: null,
   generatedAudioSamples: [],
   selectedAudioIndex: null,
   audioDuration: null,
   videoPrompt: '',
   generatedVideo: null,
+  uploadedBackground: null,
+  uploadedBackgroundUrl: null,
+  characterScale: 0.6,
+  finalVideo: null,
 }
 
 export function CreateCharacterWizard() {
@@ -37,52 +55,128 @@ export function CreateCharacterWizard() {
   const [data, setData] = useState<WizardData>(initialData)
   const [isGenerating, setIsGenerating] = useState(false)
   const [showResult, setShowResult] = useState(false)
+  const audioSampleUrlsRef = useRef<string[]>([])
 
   const updateData = useCallback((updates: Partial<WizardData>) => {
     setData((prev) => ({ ...prev, ...updates }))
   }, [])
 
-  const handleGenerateImage = useCallback(async () => {
-    setIsGenerating(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    updateData({ generatedImage: '/placeholder.jpg' })
-    setIsGenerating(false)
+  const handleUploadImage = useCallback(async (file: File) => {
+    updateData({ uploadedImage: file })
+    const result = await api.uploadImage(file)
+    updateData({ uploadedImageUrl: result.url })
   }, [updateData])
 
-  const handleGenerateVoice = useCallback(async () => {
+  const handleGenerateImage = useCallback(async () => {
+    if (!data.uploadedImageUrl) return
     setIsGenerating(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    updateData({
-      generatedAudioSamples: [
-        '/placeholder-audio-1.mp3',
-        '/placeholder-audio-2.mp3',
-        '/placeholder-audio-3.mp3',
-      ],
-      selectedAudioIndex: null,
-      audioDuration: 7,
-    })
-    setIsGenerating(false)
-  }, [updateData])
+    try {
+      const result = await api.generateImage(data.uploadedImageUrl, data.imagePrompt)
+      updateData({ generatedImage: result.output_url })
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [data.uploadedImageUrl, data.imagePrompt, updateData])
+
+  const handleGenerateVoiceDesign = useCallback(async () => {
+    setIsGenerating(true)
+    try {
+      const result = await api.generateVoice(data.audioText, data.voiceDescription)
+      const samples = result.samples.map((s) => ({ url: s.audio_url, duration: s.duration }))
+      audioSampleUrlsRef.current = result.samples.map((s) => s.audio_url)
+      updateData({
+        generatedAudioSamples: samples,
+        selectedAudioIndex: null,
+        audioDuration: null,
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [data.audioText, data.voiceDescription, updateData])
+
+  const handleGenerateVoiceClone = useCallback(async () => {
+    if (!data.cloneAudioFile) return
+    setIsGenerating(true)
+    try {
+      const cloneResult = await api.cloneVoice(data.cloneAudioFile)
+      const voiceId = cloneResult.voice_id
+      updateData({ clonedVoiceId: voiceId })
+
+      const speechResult = await api.generateClonedVoice(voiceId, data.audioText)
+      const sample = { url: speechResult.audio_url, duration: 5.0 }
+      audioSampleUrlsRef.current = [speechResult.audio_url]
+      updateData({
+        generatedAudioSamples: [sample],
+        selectedAudioIndex: null,
+        audioDuration: null,
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [data.cloneAudioFile, data.audioText, updateData])
 
   const handleSelectAudio = useCallback((index: number) => {
-    updateData({ selectedAudioIndex: index })
-  }, [updateData])
+    const sample = data.generatedAudioSamples[index]
+    updateData({ 
+      selectedAudioIndex: index,
+      audioDuration: sample.duration
+    })
+  }, [updateData, data.generatedAudioSamples])
 
   const handleGenerateVideo = useCallback(async () => {
+    if (!data.generatedImage || data.selectedAudioIndex === null) return
     setIsGenerating(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    updateData({ generatedVideo: '/placeholder-video.mp4' })
-    setIsGenerating(false)
+    try {
+      const audioDur = data.audioDuration || 5
+      const videoDuration = audioDur <= 5 ? 5 : 10
+      const generateResult = await api.generateVideo(
+        data.generatedImage,
+        data.videoPrompt,
+        videoDuration
+      )
+      const statusResult = await api.pollForCompletion(() =>
+        api.getVideoStatus(generateResult.prediction_id)
+      )
+      if (statusResult.status === 'succeeded' && statusResult.output_url) {
+        const selectedAudioUrl = audioSampleUrlsRef.current[data.selectedAudioIndex]
+        const mergeResult = await api.mergeVideo(statusResult.output_url, selectedAudioUrl)
+        updateData({ generatedVideo: mergeResult.output_url })
+      }
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [data.generatedImage, data.selectedAudioIndex, data.videoPrompt, data.audioDuration, updateData])
+
+  const handleUploadBackground = useCallback(async (file: File) => {
+    updateData({ uploadedBackground: file })
+    const result = await api.uploadImage(file)
+    updateData({ uploadedBackgroundUrl: result.url })
   }, [updateData])
+
+  const handleApplyBackground = useCallback(async () => {
+    if (!data.generatedVideo || !data.uploadedBackgroundUrl) return
+    setIsGenerating(true)
+    try {
+      const result = await api.applyBackground(
+        data.generatedVideo,
+        data.uploadedBackgroundUrl,
+        data.characterScale
+      )
+      updateData({ finalVideo: result.output_url })
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [data.generatedVideo, data.uploadedBackgroundUrl, data.characterScale, updateData])
 
   const handleReset = useCallback(() => {
     setStep(1)
     setData(initialData)
     setShowResult(false)
+    audioSampleUrlsRef.current = []
   }, [])
 
   if (showResult) {
-    return <ResultView generatedVideo={data.generatedVideo} onReset={handleReset} />
+    return <ResultView generatedVideo={data.finalVideo || data.generatedVideo} onReset={handleReset} />
   }
 
   return (
@@ -93,7 +187,7 @@ export function CreateCharacterWizard() {
             uploadedImage={data.uploadedImage}
             imagePrompt={data.imagePrompt}
             generatedImage={data.generatedImage}
-            onUploadImage={(file) => updateData({ uploadedImage: file })}
+            onUploadImage={handleUploadImage}
             onPromptChange={(prompt) => updateData({ imagePrompt: prompt })}
             onGenerate={handleGenerateImage}
             isGenerating={isGenerating}
@@ -103,14 +197,19 @@ export function CreateCharacterWizard() {
         )}
         {step === 2 && (
           <StepVoice
+            voiceMode={data.voiceMode}
             audioText={data.audioText}
             voiceDescription={data.voiceDescription}
+            cloneAudioFile={data.cloneAudioFile}
             generatedAudioSamples={data.generatedAudioSamples}
             selectedAudioIndex={data.selectedAudioIndex}
+            onVoiceModeChange={(mode) => updateData({ voiceMode: mode })}
             onAudioTextChange={(text) => updateData({ audioText: text })}
             onVoiceDescriptionChange={(desc) => updateData({ voiceDescription: desc })}
+            onCloneAudioFileChange={(file) => updateData({ cloneAudioFile: file })}
             onSelectAudio={handleSelectAudio}
-            onGenerate={handleGenerateVoice}
+            onGenerateDesign={handleGenerateVoiceDesign}
+            onGenerateClone={handleGenerateVoiceClone}
             isGenerating={isGenerating}
             onNext={() => setStep(3)}
             canGoNext={data.generatedAudioSamples.length > 0 && data.selectedAudioIndex !== null}
@@ -125,6 +224,20 @@ export function CreateCharacterWizard() {
             isGenerating={isGenerating}
             onFinish={() => setShowResult(true)}
             canFinish={data.generatedVideo !== null}
+          />
+        )}
+        {step === 4 && (
+          <StepBackground
+            greenscreenVideo={data.generatedVideo}
+            uploadedBackground={data.uploadedBackground}
+            finalVideo={data.finalVideo}
+            characterScale={data.characterScale}
+            onUploadBackground={handleUploadBackground}
+            onScaleChange={(scale) => updateData({ characterScale: scale })}
+            onApplyBackground={handleApplyBackground}
+            isApplying={isGenerating}
+            onFinish={() => setShowResult(true)}
+            canFinish={data.finalVideo !== null}
           />
         )}
       </div>

@@ -1,30 +1,62 @@
 # Talkaz
 
-Ein virtueller Playground - erstelle deinen eigenen AI-Charakter und lass ihn in deinem persönlichen Raum chillen.
+> AI-powered character video generator - upload your photo, pick a style, generate a talking avatar video.
 
-## Quick Start
+## Tech Stack
+
+- **Frontend**: Next.js 16, React, TypeScript, TailwindCSS, shadcn/ui
+- **Backend**: Python 3.13, FastAPI, Pydantic
+- **AI Services**:
+  - Replicate API (Image Generation - NanoBanana Pro)
+  - Replicate API (Video Generation - Kling v2.5)
+  - Hume AI (Voice Design - Text-to-Speech)
+  - ElevenLabs (Voice Cloning)
+- **Video Processing**: FFmpeg
+- **Hosting**: Local development
+
+## How to Run
 
 ```bash
+# Clone the repo
+git clone https://github.com/your-team/talkaz.git
+cd talkaz
+
+Add your API keys to backend/.env:
+# - REPLICATE_API_TOKEN
+# - HUME_API_KEY
+# - ELEVENLABS_API_KEY
+
+# Run everything (installs dependencies + starts frontend & backend)
 npm run start
 ```
 
-Das war's! Frontend + Backend laufen. Siehe [SETUP.md](./SETUP.md) für Details.
+Frontend runs on `http://localhost:3000`, Backend on `http://localhost:8000`.
 
-## Konzept
+## Details
 
-- **Dein Raum**: Virtueller Hintergrund/Environment zum Switchen
-- **Dein Charakter**: AI-generierter Avatar der dich imitiert
-- **Dein Style**: Verschiedene Ästhetiken (PS2, Comic, etc.)
-- **Deine Vibes**: Musik und Atmosphäre
+### User Flow
 
-## Hackathon
+1. **Upload Image** - Full-body photo of yourself
+2. **Generate Character** - AI transforms your photo into a stylized character (PS2, Anime, Cartoon)
+3. **Configure Voice** - Either design a voice from description (Hume) or clone your own voice (ElevenLabs)
+4. **Generate Video** - AI creates an animated video of your character speaking
 
-2-Tage Hackathon Projekt mit 2-Mann Team.
+### Architecture
 
-## Branches
+```
+┌─────────────────┐     ┌─────────────────┐
+│    Frontend     │────▶│     Backend     │
+│   (Next.js)     │◀────│   (FastAPI)     │
+└─────────────────┘     └────────┬────────┘
+                                 │
+          ┌──────────────────────┼──────────────────────┐
+          ▼                      ▼                      ▼
+   ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+   │  Replicate  │      │   Hume AI   │      │ ElevenLabs  │
+   │ (Image/Video)│      │  (Voice)    │      │(Voice Clone)│
+   └─────────────┘      └─────────────┘      └─────────────┘
+```
 
-| Branch | Fokus |
-|--------|-------|
-| `main` | Stabil, demo-ready |
-| `feat/ui-playground` | UI/Frontend (Person A) |
-| `feat/character-pipeline` | Character AI (Person B) |
+### Hackathon
+
+2-Day AI Hackathon project with a 2-person team.

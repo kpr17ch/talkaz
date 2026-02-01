@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Spinner } from '@/components/ui/spinner'
-import { Check } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 interface StepVideoProps {
   videoPrompt: string
@@ -83,8 +83,8 @@ export function StepVideo({
                   disabled={!canFinish}
                   className="cursor-pointer"
                 >
-                  <Check className="mr-1 h-4 w-4" />
-                  Finish
+                  Next
+                  <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
             </div>

@@ -25,3 +25,19 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Uploads / Media
+backend/uploads/
+uploads/
+*.mp4
+*.mp3
+*.wav
+*.jpeg
+*.jpg
+*.png
+*.gif
+*.webp
+
+# Next.js
+.next/
+out/
