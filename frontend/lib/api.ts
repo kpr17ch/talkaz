@@ -134,14 +134,22 @@ export async function generateClonedVoice(voiceId: string, text: string): Promis
   return response.json()
 }
 
-export async function generateVideo(imageUrl: string, prompt: string, duration: number = 5): Promise<VideoGenerateResponse> {
+export async function generateVideo(
+  imageUrl: string,
+  spokenLine: string,
+  sceneDescription: string = '',
+  duration: number = 5,
+  style: string = 'Playstation 2'
+): Promise<VideoGenerateResponse> {
   const response = await fetch(`${API_URL}/api/v1/video/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       image_url: imageUrl,
-      prompt,
+      spoken_line: spokenLine,
+      scene_description: sceneDescription,
       duration,
+      style,
     }),
   })
 

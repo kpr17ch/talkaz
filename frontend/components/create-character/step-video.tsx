@@ -7,9 +7,9 @@ import { Spinner } from '@/components/ui/spinner'
 import { ChevronRight } from 'lucide-react'
 
 interface StepVideoProps {
-  videoPrompt: string
+  sceneDescription: string
   generatedVideo: string | null
-  onVideoPromptChange: (prompt: string) => void
+  onSceneDescriptionChange: (description: string) => void
   onGenerate: () => void
   isGenerating: boolean
   onFinish: () => void
@@ -17,15 +17,15 @@ interface StepVideoProps {
 }
 
 export function StepVideo({
-  videoPrompt,
+  sceneDescription,
   generatedVideo,
-  onVideoPromptChange,
+  onSceneDescriptionChange,
   onGenerate,
   isGenerating,
   onFinish,
   canFinish,
 }: StepVideoProps) {
-  const canGenerate = videoPrompt.trim().length > 0
+  const canGenerate = true
 
   return (
     <div className="grid min-h-[420px] grid-cols-2 items-stretch gap-6">
@@ -35,13 +35,16 @@ export function StepVideo({
         </CardHeader>
         <CardContent className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col space-y-2">
-            <label className="text-sm font-medium">What should happen in the video?</label>
+            <label className="text-sm font-medium">Scene Description (Optional)</label>
             <Textarea
-              placeholder="Describe the actions... (e.g. waves at the camera, dances, points at something)"
-              value={videoPrompt}
-              onChange={(e) => onVideoPromptChange(e.target.value)}
+              placeholder="Describe the scene/mood... (e.g. Birthday video for my brother, Roast video, Motivational speech)"
+              value={sceneDescription}
+              onChange={(e) => onSceneDescriptionChange(e.target.value)}
               className="flex-1 resize-none"
             />
+            <p className="text-xs text-muted-foreground">
+              Leave empty to use default animations, or describe the scene to customize gestures and movements.
+            </p>
           </div>
 
           <Button

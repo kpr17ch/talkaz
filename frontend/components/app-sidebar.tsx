@@ -34,7 +34,7 @@ const data = {
   navMain: [
     {
       title: "My Characters",
-      url: "#",
+      url: "/my-characters",
       icon: IconUsers,
     },
     {

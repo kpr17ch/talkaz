@@ -1,7 +1,11 @@
 import replicate
 import os
+import logging
 from pathlib import Path
+from fastapi.concurrency import run_in_threadpool
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 def _ensure_replicate_token():
@@ -97,7 +101,8 @@ Rendering rules:
 - looks like a raw anime character render prepared for chroma keying""",
 }
 
-VIDEO_PROMPT = """Animate the provided image into a short video.
+VIDEO_STYLE_PROMPTS = {
+    "Playstation 2": """Animate the provided image into a short video.
 
 The character must remain EXACTLY the same as in the input image.  
 Do not change the character's identity, face, body, clothing, proportions, or style.
@@ -116,9 +121,7 @@ Style:
 - Slightly stiff PS2 animation style
 
 Animation instructions:
-- The character keeps the same main pose and body position.
-- The camera is static and centered.
-- The character is looking directly into the camera at all times.
+{animation_instructions}
 
 Speaking behavior:
 - Mouth movement follows the rhythm and emphasis of the following line.
@@ -127,10 +130,7 @@ Speaking behavior:
 - Do NOT move the mouth at a constant speed.
 
 Spoken line (for rhythm and emphasis reference ONLY):
-"What's UP, dawg?  
-You wanna go grab some FOOD?  
-Don't WORRY — it's on ME.  
-I know your BROKE ass can't pay for SHIT."
+"{spoken_line}"
 
 Emphasis rules:
 - Words in ALL CAPS are strongly emphasized.
@@ -139,11 +139,7 @@ Emphasis rules:
 - More relaxed mouth movement on non-emphasized words.
 
 Hand and arm gestures:
-- Expressive, street-style hand gestures that follow the emphasis.
-- Stronger, punchy gestures on emphasized words.
-- Smaller gestures during calm parts.
-- Natural, confident GTA-style attitude.
-- No chaotic or cartoonish movement.
+{hand_arm_gestures}
 
 Restrictions:
 - Do NOT change stance or posture.
@@ -160,7 +156,111 @@ Overall feeling:
 A PS2-era GTA San Andreas NPC delivering a confident, street-smart line  
 directly to the camera in a cutscene,  
 with attitude, personality, and emphasis,  
-authentic early-2000s low-budget game animation."""
+authentic early-2000s low-budget game animation.""",
+    "Anime": """Animate the provided image into a short video.
+
+The character must remain EXACTLY the same as in the input image.  
+Do not change the character's identity, face, body, clothing, proportions, or style.
+
+Video timing (VERY IMPORTANT):
+- The character should appear to be speaking continuously for the full duration.
+- Mouth movement must be active and consistent from start to end.
+- Short natural pauses are allowed only where indicated.
+
+Style:
+- Authentic early 2000s anime aesthetic
+- Sharp, angular character design
+- Spiky, edgy linework
+- Strong jawlines and defined facial features
+- Gritty street-samurai vibe
+- Hip-hop influenced anime style
+- Minimal softness, no cute or moe features
+- Raw, expressive faces
+- Limited color palette
+- High-contrast cel shading
+- Visible ink lines and rough outlines
+- Cinematic anime look, not modern glossy anime
+- Cool, dangerous, stylish energy
+
+Animation instructions:
+{animation_instructions}
+
+Speaking behavior:
+- Mouth movement follows the rhythm and emphasis of the following line.
+- Mouth opening varies based on emphasis.
+- Stronger mouth movement on emphasized words.
+- Do NOT move the mouth at a constant speed.
+
+Spoken line (for rhythm and emphasis reference ONLY):
+"{spoken_line}"
+
+Emphasis rules:
+- Words in ALL CAPS are strongly emphasized.
+- Slight pause after each line break.
+- Higher energy and stronger mouth opening on emphasized words.
+- More relaxed mouth movement on non-emphasized words.
+
+Hand and arm gestures:
+{hand_arm_gestures}
+
+Restrictions:
+- Do NOT change stance or posture.
+- Do NOT add walking, turning, or dancing.
+- Do NOT add background elements.
+- Do NOT add text or visual effects.
+
+Background:
+- SOLID PURE GREEN BACKGROUND (GREEN SCREEN)
+- Flat, even green color (#00FF00)
+- No gradients, no shadows, no lighting variation on the background
+
+Overall feeling:
+An early-2000s street-anime character delivering a confident, gritty line  
+directly to the camera in a cutscene,  
+sharp, edgy, dangerous, and stylish,  
+with attitude, personality, and emphasis,  
+authentic old-school anime energy inspired by street samurai aesthetics."""
+}
+
+DEFAULT_ANIMATION_INSTRUCTIONS = """- The character keeps the same main pose and body position.
+- The camera is static and centered.
+- The character is looking directly into the camera at all times."""
+
+DEFAULT_HAND_ARM_GESTURES = {
+    "Playstation 2": """- Expressive, street-style hand gestures that follow the emphasis.
+- Stronger, punchy gestures on emphasized words.
+- Smaller gestures during calm parts.
+- Natural, confident GTA-style attitude.
+- No chaotic or cartoonish movement.""",
+    "Anime": """- Expressive, street-style hand gestures that follow the emphasis.
+- Stronger, punchy gestures on emphasized words.
+- Smaller gestures during calm parts.
+- Natural, confident street-anime attitude.
+- No chaotic or cartoonish movement."""
+}
+
+def _get_default_hand_arm_gestures(style: str = "Playstation 2") -> str:
+    return DEFAULT_HAND_ARM_GESTURES.get(style, DEFAULT_HAND_ARM_GESTURES["Playstation 2"])
+
+
+def get_video_prompt(
+    spoken_line: str,
+    animation_instructions: str | None = None,
+    hand_arm_gestures: str | None = None,
+    style: str = "Playstation 2"
+) -> str:
+    style_prompt_template = VIDEO_STYLE_PROMPTS.get(style, VIDEO_STYLE_PROMPTS["Playstation 2"])
+    final_prompt = style_prompt_template.format(
+        spoken_line=spoken_line,
+        animation_instructions=animation_instructions or DEFAULT_ANIMATION_INSTRUCTIONS,
+        hand_arm_gestures=hand_arm_gestures or _get_default_hand_arm_gestures(style)
+    )
+    logger.info("=" * 80)
+    logger.info("FINAL VIDEO PROMPT (sent to Replicate):")
+    logger.info("=" * 80)
+    logger.info(final_prompt)
+    logger.info("=" * 80)
+    return final_prompt
 
 VIDEO_NEGATIVE_PROMPT = """text, words, letters, typography,
 subtitles, captions, speech bubbles,
@@ -203,13 +303,21 @@ def create_image_sync(source_image_url: str, style_prompt: str) -> str:
         return str(output)
 
 
-def create_video_sync(image_url: str, prompt: str, duration: float = 5.0) -> str:
+def create_video_sync(
+    image_url: str,
+    spoken_line: str,
+    duration: float = 5.0,
+    animation_instructions: str | None = None,
+    hand_arm_gestures: str | None = None,
+    style: str = "Playstation 2"
+) -> str:
     _ensure_replicate_token()
+    video_prompt = get_video_prompt(spoken_line, animation_instructions, hand_arm_gestures, style)
     output = replicate.run(
         "kwaivgi/kling-v2.5-turbo-pro",
         input={
             "start_image": image_url,
-            "prompt": VIDEO_PROMPT,
+            "prompt": video_prompt,
             "negative_prompt": VIDEO_NEGATIVE_PROMPT,
             "duration": int(duration),
             "aspect_ratio": "9:16",
@@ -218,13 +326,21 @@ def create_video_sync(image_url: str, prompt: str, duration: float = 5.0) -> str
     return output.url if hasattr(output, 'url') else str(output)
 
 
-async def create_video_prediction(image_url: str, prompt: str, duration: float = 5.0) -> dict:
+async def create_video_prediction(
+    image_url: str,
+    spoken_line: str,
+    duration: float = 5.0,
+    animation_instructions: str | None = None,
+    hand_arm_gestures: str | None = None,
+    style: str = "Playstation 2"
+) -> dict:
     _ensure_replicate_token()
+    video_prompt = get_video_prompt(spoken_line, animation_instructions, hand_arm_gestures, style)
     prediction = replicate.predictions.create(
         model="kwaivgi/kling-v2.5-turbo-pro",
         input={
             "start_image": image_url,
-            "prompt": VIDEO_PROMPT,
+            "prompt": video_prompt,
             "negative_prompt": VIDEO_NEGATIVE_PROMPT,
             "duration": int(duration),
             "aspect_ratio": "9:16",
@@ -254,3 +370,48 @@ async def get_prediction_status(prediction_id: str) -> dict:
         "output": output_url,
         "error": prediction.error,
     }
+
+
+def apply_lipsync_sync(video_url: str, audio_file) -> str:
+    _ensure_replicate_token()
+    # #region agent log
+    import json, time
+    log_path = "/Users/kai.perich/Projects/Private/talkaz/.cursor/debug.log"
+    entry = json.dumps({"hypothesisId": "LIPSYNC", "location": "replicate.py:apply_lipsync_sync", "message": "Starting lip sync", "data": {"video_url": video_url, "audio_type": str(type(audio_file))}, "timestamp": int(time.time() * 1000), "sessionId": "debug-session"})
+    with open(log_path, "a") as f:
+        f.write(entry + "\n")
+    # #endregion
+    output = replicate.run(
+        "kwaivgi/kling-lip-sync",
+        input={
+            "video_url": video_url,
+            "audio_file": audio_file,
+        }
+    )
+    # #region agent log
+    entry = json.dumps({"hypothesisId": "LIPSYNC", "location": "replicate.py:apply_lipsync_sync", "message": "Lip sync completed", "data": {"output_type": str(type(output)), "has_url": hasattr(output, 'url')}, "timestamp": int(time.time() * 1000), "sessionId": "debug-session"})
+    with open(log_path, "a") as f:
+        f.write(entry + "\n")
+    # #endregion
+    if hasattr(output, 'url'):
+        return output.url
+    elif isinstance(output, str):
+        return output
+    elif isinstance(output, list) and len(output) > 0:
+        item = output[0]
+        return item.url if hasattr(item, 'url') else str(item)
+    else:
+        return str(output)
+
+
+async def apply_lipsync(video_url: str, audio_path_or_url: str) -> str:
+    settings = get_settings()
+    
+    if "/uploads/" in audio_path_or_url:
+        relative_path = audio_path_or_url.split("/uploads/")[-1]
+        file_path = Path(settings.upload_dir) / relative_path
+        logger.info(f"Loading local audio file: {file_path}")
+        with open(file_path, "rb") as f:
+            return await run_in_threadpool(apply_lipsync_sync, video_url, f)
+    else:
+        return await run_in_threadpool(apply_lipsync_sync, video_url, audio_path_or_url)

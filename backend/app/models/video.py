@@ -3,8 +3,10 @@ from pydantic import BaseModel
 
 class VideoGenerateRequest(BaseModel):
     image_url: str
-    prompt: str
+    spoken_line: str
+    scene_description: str = ""
     duration: float = 5.0
+    style: str = "Playstation 2"
 
 
 class VideoGenerateResponse(BaseModel):

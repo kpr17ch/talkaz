@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { StepImage } from './step-image'
 import { StepVoice } from './step-voice'
 import { StepVideo } from './step-video'
 import { StepBackground } from './step-background'
 import { ResultView } from './result-view'
 import * as api from '@/lib/api'
+import { saveCharacter } from '@/lib/character-storage'
 
 interface WizardData {
   uploadedImage: File | null
@@ -21,7 +22,7 @@ interface WizardData {
   generatedAudioSamples: { url: string; duration: number }[]
   selectedAudioIndex: number | null
   audioDuration: number | null
-  videoPrompt: string
+  sceneDescription: string
   generatedVideo: string | null
   uploadedBackground: File | null
   uploadedBackgroundUrl: string | null
@@ -42,7 +43,7 @@ const initialData: WizardData = {
   generatedAudioSamples: [],
   selectedAudioIndex: null,
   audioDuration: null,
-  videoPrompt: '',
+  sceneDescription: '',
   generatedVideo: null,
   uploadedBackground: null,
   uploadedBackgroundUrl: null,
@@ -56,10 +57,34 @@ export function CreateCharacterWizard() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const audioSampleUrlsRef = useRef<string[]>([])
+  const savedRef = useRef(false)
 
   const updateData = useCallback((updates: Partial<WizardData>) => {
     setData((prev) => ({ ...prev, ...updates }))
   }, [])
+
+  useEffect(() => {
+    if (showResult && !savedRef.current) {
+      const greenscreenVideo = data.generatedVideo
+      const finalVideo = data.finalVideo
+      
+      if (greenscreenVideo && data.generatedImage && data.audioText) {
+        const characterName = data.imagePrompt.trim() || `Character ${new Date().toLocaleDateString('en-US')}`
+        
+        saveCharacter({
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          name: characterName,
+          imageUrl: data.generatedImage,
+          greenscreenVideoUrl: greenscreenVideo,
+          finalVideoUrl: finalVideo || undefined,
+          audioText: data.audioText,
+        })
+        
+        savedRef.current = true
+      }
+    }
+  }, [showResult, data.generatedVideo, data.finalVideo, data.generatedImage, data.audioText, data.imagePrompt])
 
   const handleUploadImage = useCallback(async (file: File) => {
     updateData({ uploadedImage: file })
@@ -129,10 +154,13 @@ export function CreateCharacterWizard() {
     try {
       const audioDur = data.audioDuration || 5
       const videoDuration = audioDur <= 5 ? 5 : 10
+      const style = data.imagePrompt || 'Playstation 2'
       const generateResult = await api.generateVideo(
         data.generatedImage,
-        data.videoPrompt,
-        videoDuration
+        data.audioText,
+        data.sceneDescription,
+        videoDuration,
+        style
       )
       const statusResult = await api.pollForCompletion(() =>
         api.getVideoStatus(generateResult.prediction_id)
@@ -145,7 +173,7 @@ export function CreateCharacterWizard() {
     } finally {
       setIsGenerating(false)
     }
-  }, [data.generatedImage, data.selectedAudioIndex, data.videoPrompt, data.audioDuration, updateData])
+  }, [data.generatedImage, data.selectedAudioIndex, data.audioText, data.sceneDescription, data.audioDuration, data.imagePrompt, updateData])
 
   const handleUploadBackground = useCallback(async (file: File) => {
     updateData({ uploadedBackground: file })
@@ -173,6 +201,7 @@ export function CreateCharacterWizard() {
     setData(initialData)
     setShowResult(false)
     audioSampleUrlsRef.current = []
+    savedRef.current = false
   }, [])
 
   if (showResult) {
@@ -217,9 +246,9 @@ export function CreateCharacterWizard() {
         )}
         {step === 3 && (
           <StepVideo
-            videoPrompt={data.videoPrompt}
+            sceneDescription={data.sceneDescription}
             generatedVideo={data.generatedVideo}
-            onVideoPromptChange={(prompt) => updateData({ videoPrompt: prompt })}
+            onSceneDescriptionChange={(description) => updateData({ sceneDescription: description })}
             onGenerate={handleGenerateVideo}
             isGenerating={isGenerating}
             onFinish={() => setShowResult(true)}

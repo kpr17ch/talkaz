@@ -5,9 +5,12 @@ import {
   SidebarInset,
   SidebarProvider,
 } from '@/components/ui/sidebar'
-import { CreateCharacterWizard } from '@/components/create-character/wizard'
 
-export default function Page() {
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <SidebarProvider
       style={
@@ -21,7 +24,7 @@ export default function Page() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col p-6">
-          <CreateCharacterWizard />
+          {children}
         </div>
       </SidebarInset>
     </SidebarProvider>
