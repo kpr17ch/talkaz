@@ -14,6 +14,17 @@ def _ensure_replicate_token():
     if token and not os.environ.get("REPLICATE_API_TOKEN"):
         os.environ["REPLICATE_API_TOKEN"] = token
 
+
+def _extract_output_url(output) -> str:
+    if hasattr(output, "url"):
+        return output.url
+    if isinstance(output, str):
+        return output
+    if isinstance(output, list) and len(output) > 0:
+        item = output[0]
+        return item.url if hasattr(item, "url") else str(item)
+    return str(output)
+
 STYLE_PROMPTS = {
     "Playstation 2": """Create an authentic early 2000s PlayStation 2 (PS2) video game character
 in the style of GTA San Andreas (2004), based EXACTLY on the person
@@ -273,34 +284,61 @@ random text, floating text,
 any written content of any kind"""
 
 
-def create_image_sync(source_image_url: str, style_prompt: str) -> str:
+def create_nano_banana_image_sync(
+    prompt: str,
+    image_paths: list[str | Path],
+    aspect_ratio: str = "1:1",
+    output_format: str = "png",
+) -> str:
     _ensure_replicate_token()
-    prompt = STYLE_PROMPTS.get(style_prompt, style_prompt)
-    
-    settings = get_settings()
-    relative_path = source_image_url.split("/uploads/")[-1]
-    file_path = Path(settings.upload_dir) / relative_path
-    
-    with open(file_path, "rb") as f:
+    files: list = []
+    try:
+        for image_path in image_paths:
+            files.append(Path(image_path).open("rb"))
         output = replicate.run(
             "google/nano-banana-pro",
             input={
                 "prompt": prompt,
-                "image_input": [f],
-                "aspect_ratio": "4:3",
-                "output_format": "png",
+                "image_input": files,
+                "aspect_ratio": aspect_ratio,
+                "output_format": output_format,
             }
         )
-    
-    if hasattr(output, 'url'):
-        return output.url
-    elif isinstance(output, str):
-        return output
-    elif isinstance(output, list) and len(output) > 0:
-        item = output[0]
-        return item.url if hasattr(item, 'url') else str(item)
-    else:
-        return str(output)
+    finally:
+        for file_obj in files:
+            file_obj.close()
+
+    return _extract_output_url(output)
+
+
+async def create_nano_banana_image(
+    prompt: str,
+    image_paths: list[str | Path],
+    aspect_ratio: str = "1:1",
+    output_format: str = "png",
+) -> str:
+    return await run_in_threadpool(
+        create_nano_banana_image_sync,
+        prompt,
+        [str(path) for path in image_paths],
+        aspect_ratio,
+        output_format,
+    )
+
+
+def create_image_sync(source_image_url: str, style_prompt: str) -> str:
+    prompt = STYLE_PROMPTS.get(style_prompt, style_prompt)
+
+    settings = get_settings()
+    relative_path = source_image_url.split("/uploads/")[-1]
+    file_path = Path(settings.upload_dir) / relative_path
+
+    return create_nano_banana_image_sync(
+        prompt=prompt,
+        image_paths=[file_path],
+        aspect_ratio="4:3",
+        output_format="png",
+    )
 
 
 def create_video_sync(
@@ -323,7 +361,7 @@ def create_video_sync(
             "aspect_ratio": "9:16",
         }
     )
-    return output.url if hasattr(output, 'url') else str(output)
+    return _extract_output_url(output)
 
 
 async def create_video_prediction(
@@ -393,15 +431,7 @@ def apply_lipsync_sync(video_url: str, audio_file) -> str:
     with open(log_path, "a") as f:
         f.write(entry + "\n")
     # #endregion
-    if hasattr(output, 'url'):
-        return output.url
-    elif isinstance(output, str):
-        return output
-    elif isinstance(output, list) and len(output) > 0:
-        item = output[0]
-        return item.url if hasattr(item, 'url') else str(item)
-    else:
-        return str(output)
+    return _extract_output_url(output)
 
 
 async def apply_lipsync(video_url: str, audio_path_or_url: str) -> str:
