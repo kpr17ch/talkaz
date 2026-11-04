@@ -1,15 +1,15 @@
-# Character Pipeline Docs (Rick)
+# Character Pipeline Docs
 
 Diese Dateien dokumentieren die WhatsApp-Spezifikation (David, 03.03.2026) so, dass ein AI-Agent die Character-Assets konsistent erzeugen kann.
 
 ## Ziel
-- Einheitliche Generierung von Rick-Assets für Lip-Sync und Work-Idle-Animation
+- Einheitliche Generierung von Character-Assets für Lip-Sync und Work-Idle-Animation
 - Klare Input/Output-Abhängigkeiten
 - Copy/Paste-fähige Prompts pro Asset
 
 ## Reihenfolge
-1. `RICK_MAIN` als Identity Base sicherstellen
-2. Mouth-Varianten aus `RICK_MAIN` generieren (`L`, `O`, `JCHSH`, `BMP`)
+1. `CHARACTER_MAIN` als Identity Base sicherstellen
+2. Mouth-Varianten aus `CHARACTER_MAIN` generieren (`L`, `O`, `JCHSH`, `BMP`)
 3. Work-Idle-Frames sequentiell generieren (`A -> B -> C -> D`)
 
 ## Wichtige Regeln

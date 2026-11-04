@@ -1,18 +1,18 @@
-# Prompt: O Mouth (Rick)
+# Prompt: O Mouth
 
 ## Inputs
-- Primary Base: `RICK_MAIN`
+- Primary Base: `CHARACTER_MAIN`
 - Geometry Reference: `O`
 
 ## Prompt (Copy/Paste)
 ```text
-TASK: Create a variant of the provided base character image for speech animation using the input reference image "Rick Main" as the primary base and the input reference image "O" as geometry guidance for the mouth.
+TASK: Create a variant of the provided base character image for speech animation using the input reference image "Character Main" as the primary base and the input reference image "O" as geometry guidance for the mouth.
 
 PRIMARY GOAL:
 Modify ONLY the mouth of the original character to match a more perfectly rounded, circular "O" mouth shape (not vertically oval) based on the reference image named "O", while keeping the character perfectly identical in every other aspect.
 
 CRITICAL IDENTITY LOCK:
-This must remain the EXACT SAME character from the base image (Rick Sanchez from Rick and Morty)
+This must remain the EXACT SAME character from the base image
 Preserve identical face structure, jawline, chin shape, and lip style
 Preserve hair, eyes, clothing, pose, arms, and lighting exactly
 Do NOT redesign or restyle anything
@@ -38,13 +38,13 @@ Jaw only slightly lowered
 Mouth corners softly drawn inward
 No horizontal stretching
 Upper teeth not visible or only minimally visible
-Keep original mouth width proportion relative to Rick's face
-Keep original lip thickness and Rick-style line treatment
-Expression remains neutral, slightly bored and analytical (Rick-like)
+Keep original mouth width proportion relative to the character's face
+Keep original lip thickness and original line treatment
+Expression remains neutral and calm, matching the base expression
 Must read immediately as a strong "O/U" vowel shape
 
 STYLE PRESERVATION (VERY IMPORTANT):
-Keep original Rick and Morty animation style
+Keep original animation style of the base image
 Keep original line thickness
 Keep original cel shading style
 Keep original mouth rendering style
@@ -61,7 +61,7 @@ no shadows on background
 REFERENCE USAGE RULE:
 Use the reference image named "O" ONLY to guide roundness and lip pursing
 Do NOT copy colors or foreign stylistic elements
-Final mouth must look naturally integrated into Rick from "Rick Main"
+Final mouth must look naturally integrated into the character from "Character Main"
 
 TECHNICAL REQUIREMENTS:
 square format (1:1)
@@ -75,5 +75,5 @@ no geometry shift
 no flickering artifacts
 
 IMPORTANT:
-This must look like the same animation rig from "Rick Main", but with a properly circular (not oval) "O" speaking mouth, tightly matching the reference image "O" while fully preserving the original Rick and Morty style.
+This must look like the same animation rig from "Character Main", but with a properly circular (not oval) "O" speaking mouth, tightly matching the reference image "O" while fully preserving the original style of the base image.
 ```

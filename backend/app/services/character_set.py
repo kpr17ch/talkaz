@@ -24,16 +24,16 @@ logger = logging.getLogger(__name__)
 SOURCE_KEY = "__source__"
 TARGET_IMAGE_SIZE = (2048, 2048)
 CONTRACT_FILENAMES = [
-    "rick_main.jpeg",
-    "rick_smiling.jpeg",
-    "rick_speak_ae.jpeg",
-    "rick_speak_ltsch.jpeg",
-    "rick_speak_o.jpeg",
-    "rick_speak_pmn.jpeg",
-    "rick_work_a.jpeg",
-    "rick_work_b.jpeg",
-    "rick_work_c.jpeg",
-    "rick_work_d.jpeg",
+    "avatar_main.jpeg",
+    "avatar_smiling.jpeg",
+    "avatar_speak_ae.jpeg",
+    "avatar_speak_ltsch.jpeg",
+    "avatar_speak_o.jpeg",
+    "avatar_speak_pmn.jpeg",
+    "avatar_work_a.jpeg",
+    "avatar_work_b.jpeg",
+    "avatar_work_c.jpeg",
+    "avatar_work_d.jpeg",
 ]
 
 if hasattr(Image, "Resampling"):
@@ -97,61 +97,61 @@ Add subtle typing variation with slight hand lift while preserving identity, fra
 FRAME_PIPELINE = [
     FrameDefinition(
         key="main",
-        filename="rick_main.jpeg",
+        filename="avatar_main.jpeg",
         input_keys=(SOURCE_KEY,),
         prompt="",
     ),
     FrameDefinition(
         key="smiling",
-        filename="rick_smiling.jpeg",
+        filename="avatar_smiling.jpeg",
         input_keys=("main",),
         prompt=SMILING_PROMPT,
     ),
     FrameDefinition(
         key="speak_ae",
-        filename="rick_speak_ae.jpeg",
+        filename="avatar_speak_ae.jpeg",
         input_keys=("main",),
         prompt=SPEAK_AE_PROMPT,
     ),
     FrameDefinition(
         key="speak_ltsch",
-        filename="rick_speak_ltsch.jpeg",
+        filename="avatar_speak_ltsch.jpeg",
         input_keys=("main",),
         prompt=SPEAK_LTSCH_PROMPT,
     ),
     FrameDefinition(
         key="speak_o",
-        filename="rick_speak_o.jpeg",
+        filename="avatar_speak_o.jpeg",
         input_keys=("main",),
         prompt=SPEAK_O_PROMPT,
     ),
     FrameDefinition(
         key="speak_pmn",
-        filename="rick_speak_pmn.jpeg",
+        filename="avatar_speak_pmn.jpeg",
         input_keys=("main",),
         prompt=SPEAK_PMN_PROMPT,
     ),
     FrameDefinition(
         key="work_a",
-        filename="rick_work_a.jpeg",
+        filename="avatar_work_a.jpeg",
         input_keys=("main",),
         prompt=WORK_A_PROMPT,
     ),
     FrameDefinition(
         key="work_b",
-        filename="rick_work_b.jpeg",
+        filename="avatar_work_b.jpeg",
         input_keys=("work_a", "main"),
         prompt=WORK_B_PROMPT,
     ),
     FrameDefinition(
         key="work_c",
-        filename="rick_work_c.jpeg",
+        filename="avatar_work_c.jpeg",
         input_keys=("work_b", "main"),
         prompt=WORK_C_PROMPT,
     ),
     FrameDefinition(
         key="work_d",
-        filename="rick_work_d.jpeg",
+        filename="avatar_work_d.jpeg",
         input_keys=("work_c", "main"),
         prompt=WORK_D_PROMPT,
     ),

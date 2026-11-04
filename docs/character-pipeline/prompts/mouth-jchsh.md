@@ -1,18 +1,18 @@
-# Prompt: JCHSH Mouth (Rick)
+# Prompt: JCHSH Mouth
 
 ## Inputs
-- Primary Base: `RICK_MAIN`
+- Primary Base: `CHARACTER_MAIN`
 - Geometry Reference: `JCHSH`
 
 ## Prompt (Copy/Paste)
 ```text
-TASK: Create a variant of the provided base character image for speech animation using the input reference image "Rick Main" as the primary base and the input reference image "JCHSH" as geometry guidance for the mouth.
+TASK: Create a variant of the provided base character image for speech animation using the input reference image "Character Main" as the primary base and the input reference image "JCHSH" as geometry guidance for the mouth.
 
 PRIMARY GOAL:
 Modify ONLY the mouth of the original character to match the narrow, flatter, slightly wider J/CH/SH mouth shape shown in the reference image named "JCHSH", while keeping the character perfectly identical in every other aspect.
 
 CRITICAL IDENTITY LOCK:
-This must remain the EXACT SAME character from the base image (Rick Sanchez from Rick and Morty)
+This must remain the EXACT SAME character from the base image
 Preserve identical face structure, jawline, chin shape, and lip style
 Preserve hair, eyes, clothing, pose, arms, and lighting exactly
 Do NOT redesign or restyle anything
@@ -38,14 +38,14 @@ Corners subtly drawn inward (not smiling)
 Jaw only minimally lowered
 No wide open mouth
 No tall oval opening
-Keep original mouth width proportion relative to Rick's face
-Keep original lip thickness and Rick-style line treatment
+Keep original mouth width proportion relative to the character's face
+Keep original lip thickness and original line treatment
 Teeth minimally visible or not visible
-Expression remains neutral, slightly bored and analytical (Rick-like)
+Expression remains neutral and calm, matching the base expression
 Must clearly read as J/CH/SH phoneme mouth shape
 
 STYLE PRESERVATION (VERY IMPORTANT):
-Keep original Rick and Morty animation style
+Keep original animation style of the base image
 Keep original line thickness
 Keep original cel shading style
 Keep original mouth rendering style
@@ -62,7 +62,7 @@ no shadows on background
 REFERENCE USAGE RULE:
 Use the reference image named "JCHSH" ONLY to understand mouth geometry
 Do NOT copy colors, shapes, or foreign stylistic elements
-The final mouth must look naturally integrated into Rick from "Rick Main"
+The final mouth must look naturally integrated into the character from "Character Main"
 
 TECHNICAL REQUIREMENTS:
 square format (1:1)
@@ -76,5 +76,5 @@ no geometry shift
 no flickering artifacts
 
 IMPORTANT:
-This must look like the same animation rig from "Rick Main", with the mouth adjusted to a flat, narrow J/CH/SH speaking position guided by the reference image "JCHSH", fully rendered in the original Rick and Morty style.
+This must look like the same animation rig from "Character Main", with the mouth adjusted to a flat, narrow J/CH/SH speaking position guided by the reference image "JCHSH", fully rendered in the original style of the base image.
 ```

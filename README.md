@@ -49,7 +49,7 @@ flowchart TD
 
 ### Character-set pipeline (frame pack for talka)
 
-`POST /api/v1/character-set/generate` starts a background job that renders ten frames in a fixed order. Each frame uses the main render or the previous work frame as its reference, which keeps identity, framing and the green screen constant. The frames are normalized to 2048×2048 JPEG and zipped as a frame pack that the talka clients load directly.
+`POST /api/v1/character-set/generate` starts a background job that renders ten frames in a fixed order. Each frame uses the main render or the previous work frame as its reference, which keeps identity, framing and the green screen constant. The frames are normalized to 2048×2048 JPEG (`avatar_main.jpeg` … `avatar_work_d.jpeg`) and zipped as a frame pack that the talka clients load directly.
 
 ```mermaid
 flowchart LR

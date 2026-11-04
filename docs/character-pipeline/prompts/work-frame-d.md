@@ -1,24 +1,24 @@
-# Prompt: FRAME D - WORK IDLE (Rick)
+# Prompt: FRAME D - WORK IDLE
 
 ## Inputs
-- Primary Motion Base: `FRAME_C_WORK_IDLE_RICK`
-- Identity Reference: `RICK_MAIN`
+- Primary Motion Base: `FRAME_C_WORK_IDLE`
+- Identity Reference: `CHARACTER_MAIN`
 
 ## Prompt (Reconstructed from WhatsApp, Copy/Paste)
 ```text
-FRAME D - WORK IDLE (RICK)
-TASK: Create the next subtle typing motion variant based primarily on the reference image "FRAME_C_WORK_IDLE_RICK".
+FRAME D - WORK IDLE
+TASK: Create the next subtle typing motion variant based primarily on the reference image "FRAME_C_WORK_IDLE".
 
 PRIMARY GOAL:
-Use the image named "FRAME_C_WORK_IDLE_RICK" as the direct visual baseline and introduce a slightly higher hand lift during typing while keeping the character perfectly consistent and loop-friendly.
+Use the image named "FRAME_C_WORK_IDLE" as the direct visual baseline and introduce a slightly higher hand lift during typing while keeping the character perfectly consistent and loop-friendly.
 
 REFERENCE PRIORITY:
-The image "FRAME_C_WORK_IDLE_RICK" is the PRIMARY motion reference.
+The image "FRAME_C_WORK_IDLE" is the PRIMARY motion reference.
 The original base character image remains the IDENTITY reference.
-All changes must be minimal variations of FRAME_C_WORK_IDLE_RICK.
+All changes must be minimal variations of FRAME_C_WORK_IDLE.
 
 CRITICAL LOCKS:
-Maintain exact character identity (Rick Sanchez), style, framing, and laptop design/placement.
+Maintain exact character identity, style, framing, and laptop design/placement.
 No redesign, no scene change, no camera shift.
 Keep motion subtle and compatible with seamless idle looping.
 
