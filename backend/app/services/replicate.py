@@ -414,7 +414,8 @@ def apply_lipsync_sync(video_url: str, audio_file) -> str:
     _ensure_replicate_token()
     # #region agent log
     import json, time
-    log_path = "/Users/kai.perich/Projects/Private/talkaz/.cursor/debug.log"
+    log_path = Path(__file__).resolve().parents[3] / ".cursor" / "debug.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     entry = json.dumps({"hypothesisId": "LIPSYNC", "location": "replicate.py:apply_lipsync_sync", "message": "Starting lip sync", "data": {"video_url": video_url, "audio_type": str(type(audio_file))}, "timestamp": int(time.time() * 1000), "sessionId": "debug-session"})
     with open(log_path, "a") as f:
         f.write(entry + "\n")

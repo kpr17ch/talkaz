@@ -7,7 +7,7 @@
 ## Inputs
 - Primary Base: `RICK_MAIN`
 - Geometry Reference: `L`
-- Optional Mouth-Corner Guidance: SecureCloud Referenz
+- Optional Mouth-Corner Guidance: Referenz aus private reference storage
 
 ## Prompt (Draft, Copy/Paste)
 ```text

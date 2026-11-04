@@ -16,7 +16,7 @@
 - `FRAME_D_WORK_IDLE_RICK` -> Input: `FRAME_C_WORK_IDLE_RICK`
 
 ## Zusatzreferenz
-- Mundwinkel-Geometrie: Referenz liegt in **SecureCloud**.
+- Mundwinkel-Geometrie: Referenz liegt im **private reference storage**.
 
 ## Konstante Settings
 - Aspect Ratio: `1:1`

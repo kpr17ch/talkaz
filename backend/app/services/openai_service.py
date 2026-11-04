@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 from openai import OpenAI
 from fastapi.concurrency import run_in_threadpool
 from app.config import get_settings
@@ -62,7 +63,8 @@ Remember: Be conservative with animation instructions - only deviate from defaul
 def _debug_log(hypothesis_id: str, message: str, data: dict):
     # #region agent log
     import time
-    log_path = "/Users/kai.perich/Projects/Private/talkaz/.cursor/debug.log"
+    log_path = Path(__file__).resolve().parents[3] / ".cursor" / "debug.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     entry = json.dumps({"hypothesisId": hypothesis_id, "location": "openai_service.py", "message": message, "data": data, "timestamp": int(time.time() * 1000), "sessionId": "debug-session"})
     with open(log_path, "a") as f:
         f.write(entry + "\n")

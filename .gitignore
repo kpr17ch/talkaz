@@ -41,3 +41,6 @@ uploads/
 # Next.js
 .next/
 out/
+
+__pycache__/
+*.pyc
